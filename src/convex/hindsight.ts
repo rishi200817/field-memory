@@ -62,7 +62,8 @@ export function hindsightConfigured(): boolean {
  *  - same error code      +45
  *  - same fault text       +25 (partial match +15)
  *  - same machine          +15 (cross-machine precedent +4)
- *  - recency               +0–10 (newest full marks)
+ *  - recency               +0–12 (newest full marks; ~1 pt per month decay)
+ *  - same machine AND code +6 (exact signature repeat)
  *  - outcome weight         +3 (failed/partial carry decision-relevant signal)
  */
 export function relevanceScore(
@@ -76,7 +77,8 @@ export function relevanceScore(
   current: { machine: string; fault: string; errorCode: string; timestamp: string },
 ): number {
   let score = 0;
-  if (a.errorCode && a.errorCode === current.errorCode) score += 45;
+  const sameCode = Boolean(a.errorCode) && a.errorCode === current.errorCode;
+  if (sameCode) score += 45;
   else if (a.fault && current.fault && a.fault === current.fault) score += 25;
   else if (
     a.fault &&
@@ -86,15 +88,18 @@ export function relevanceScore(
     score += 15;
   }
 
-  if (a.machine === current.machine) score += 15;
+  const sameMachine = a.machine === current.machine;
+  if (sameMachine) score += 15;
   else score += 4;
+
+  if (sameCode && sameMachine) score += 6;
 
   try {
     const then = new Date(a.timestamp).getTime();
     const now = new Date(current.timestamp).getTime();
     if (!Number.isNaN(then) && !Number.isNaN(now) && now > then) {
       const months = (now - then) / (1000 * 60 * 60 * 24 * 30);
-      score += Math.max(0, 10 - months);
+      score += Math.max(0, 12 - months);
     }
   } catch {
     // ignore unparseable dates

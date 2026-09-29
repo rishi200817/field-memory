@@ -74,6 +74,10 @@ export default function Diagnostics() {
   const [saving, setSaving] = useState(false);
   const [savedInfo, setSavedInfo] = useState<{ memoryCode: string; memoryId: string } | null>(null);
 
+  // The C-17 E204 demo incident is resolvable through RESET SCENARIO — pass the
+  // simulation flag so the learning loop can be re-run end to end.
+  const isDemoIncident = selected?.code === "INC-C17-0926b";
+
   // ---- diagnosis run ------------------------------------------------------
   const diagnoseAction = useAction(api.diagnose.diagnose);
   const canRun = Boolean(selected) && !run.running;
@@ -161,6 +165,7 @@ export default function Diagnostics() {
         technicianNotes: notes.trim(),
         result,
         retain,
+        simulation: isDemoIncident,
       });
       let memoryCode = res.memoryCode;
       if (retain) {
@@ -704,7 +709,7 @@ function MemoryCard({ e, rank }: { e: Recalled; rank: number }) {
         “{e.technicianNotes}”
       </p>
       <div className="mt-2 flex items-center justify-between">
-        <span className="font-mono text-[10px] text-signal">relevance {e.relevance}%</span>
+        <span className="font-mono text-[10px] text-signal">relevance {Math.round(e.relevance)}%</span>
         <span className="font-mono text-[10px] text-muted-foreground">#{rank} match</span>
       </div>
     </Link>

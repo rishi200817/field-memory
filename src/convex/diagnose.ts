@@ -187,15 +187,17 @@ export const diagnose = action({
 // ---------------------------------------------------------------------------
 
 async function completeLLM(prompt: string): Promise<string> {
-  const res = await vly.ai.completion({
-    model: "gpt-4o-mini",
-    messages: [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: prompt },
-    ],
-    temperature: 0.2,
-    maxTokens: 500,
-  });
+  // Instructions ride in the user message (the gateway warns on system role);
+  // fail fast so the deterministic fallback keeps the demo responsive.
+  const res = await vly.ai.completion(
+    {
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: `${SYSTEM_PROMPT}\n\n${prompt}` }],
+      temperature: 0.2,
+      maxTokens: 500,
+    },
+    { timeout: 8000, retries: 1 },
+  );
   if (!res.success || !res.data) {
     throw new Error(res.error ?? "LLM unavailable");
   }

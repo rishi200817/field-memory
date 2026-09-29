@@ -132,7 +132,7 @@ export default function MemoryDetail() {
                 </div>
                 <p className="mt-1 text-sm font-medium">{r.action}</p>
                 <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">
-                  relevance {r.relevance}%
+                  relevance {Math.round(r.relevance)}%
                 </p>
               </Link>
             ))}

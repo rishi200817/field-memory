@@ -275,7 +275,7 @@ export default function Simulation() {
                 </div>
                 <div className="flex items-center gap-2">
                   <OutcomeBadge outcome={e.outcome as "resolved" | "failed" | "partial"} />
-                  <span className="font-mono text-xs text-signal">{e.relevance}%</span>
+                  <span className="font-mono text-xs text-signal">{Math.round(e.relevance)}%</span>
                 </div>
               </div>
             ))}

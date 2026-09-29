@@ -47,6 +47,8 @@ export const resolveIncident = mutation({
     technician: v.optional(v.string()),
     retain: v.boolean(),
     learning: v.optional(v.string()),
+    // When true the created artifacts are tracked so RESET SCENARIO can undo them
+    simulation: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const incident = await ctx.db.get(args.incidentId);
@@ -133,6 +135,29 @@ export const resolveIncident = mutation({
           timestamp: new Date(Date.now() + 1).toISOString(),
         }),
       );
+    }
+
+    // Track artifacts for the simulation reset (demo repeatability)
+    if (args.simulation) {
+      const sim = await ctx.db.query("simulationState").first();
+      if (sim) {
+        await ctx.db.patch(sim._id, {
+          stage: "resolved",
+          simIncidentId: incident._id,
+          simMemoryIds: [...sim.simMemoryIds, memoryId],
+          simEventIds: [...sim.simEventIds, ...events],
+          updatedAt: Date.now(),
+        });
+      } else {
+        await ctx.db.insert("simulationState", {
+          stage: "resolved",
+          round: 0,
+          simIncidentId: incident._id,
+          simMemoryIds: [memoryId],
+          simEventIds: events,
+          updatedAt: Date.now(),
+        });
+      }
     }
 
     return { memoryId, memoryCode, incidentId: incident._id, resolvedAt: now };
