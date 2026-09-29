@@ -12,8 +12,19 @@ import "./index.css";
 // Lazy load route components for better code splitting
 const Landing = lazy(() => import("./pages/Landing.tsx"));
 const AuthPage = lazy(() => import("./pages/Auth.tsx"));
-const Dashboard = lazy(() => import("./pages/Dashboard.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
+const AppShell = lazy(() => import("./components/AppShell.tsx"));
+const Overview = lazy(() => import("./pages/Overview.tsx"));
+const Machines = lazy(() => import("./pages/Machines.tsx"));
+const MachineDetail = lazy(() => import("./pages/MachineDetail.tsx"));
+const Incidents = lazy(() => import("./pages/Incidents.tsx"));
+const IncidentDetail = lazy(() => import("./pages/IncidentDetail.tsx"));
+const Diagnostics = lazy(() => import("./pages/Diagnostics.tsx"));
+const Memory = lazy(() => import("./pages/Memory.tsx"));
+const MemoryDetail = lazy(() => import("./pages/MemoryDetail.tsx"));
+const Learning = lazy(() => import("./pages/Learning.tsx"));
+const Simulation = lazy(() => import("./pages/Simulation.tsx"));
+const Settings = lazy(() => import("./pages/Settings.tsx"));
 
 // Simple loading fallback for route transitions
 function RouteLoading() {
@@ -82,8 +93,6 @@ class RootErrorBoundary extends React.Component<
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
-
-
 function RouteSyncer() {
   const location = useLocation();
   useEffect(() => {
@@ -107,7 +116,6 @@ function RouteSyncer() {
   return null;
 }
 
-
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <RootErrorBoundary>
@@ -122,16 +130,28 @@ createRoot(document.getElementById("root")!).render(
               <Route path="/" element={<Landing />} />
               <Route
                 path="/auth"
-                element={<AuthPage redirectAfterAuth="/dashboard" />}
+                element={<AuthPage redirectAfterAuth="/overview" />}
               />
               <Route
-                path="/dashboard"
                 element={
-                  <RequireAuth>
-                    <Dashboard />
+                  <RequireAuth redirectImmediately>
+                    <AppShell />
                   </RequireAuth>
                 }
-              />
+              >
+                <Route path="/overview" element={<Overview />} />
+                <Route path="/machines" element={<Machines />} />
+                <Route path="/machines/:id" element={<MachineDetail />} />
+                <Route path="/incidents" element={<Incidents />} />
+                <Route path="/incidents/:id" element={<IncidentDetail />} />
+                <Route path="/diagnostics" element={<Diagnostics />} />
+                <Route path="/memory" element={<Memory />} />
+                <Route path="/memory/:id" element={<MemoryDetail />} />
+                <Route path="/learning" element={<Learning />} />
+                <Route path="/simulation" element={<Simulation />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/dashboard" element={<Overview />} />
+              </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
